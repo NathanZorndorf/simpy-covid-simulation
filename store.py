@@ -2,6 +2,7 @@
 Simple simulation in which N people randomly decide to take a trip to the grocery store each day.
 '''
 
+import os
 import simpy
 from numpy import random
 import numpy as np
@@ -73,11 +74,9 @@ def main():
     env.run(until=SIM_TIME)
 
     # export 
-    # import ipdb; ipdb.set_trace()
     df = pd.DataFrame.from_dict(income, orient='index', columns=['income'])
-    # plt.plot(df.index, df.income)
-
-    df.to_csv('./out/covid-2-income.csv', index=True)
+    filename = __file__.split('.')[0]
+    df.to_csv(f'./out/{filename}.csv', index=True)
 
 if __name__ == "__main__":
     main()
