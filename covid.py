@@ -14,10 +14,10 @@ import matplotlib.pyplot as plt
 random.seed(42)
 
 # parameters
-N_POPULATION = 1000 # total homes (or persons in v1)
-P_INFECTION = 0.01 # pulled this number out of my bottom (this is what marble dude used)
+N_POPULATION = 10000 # total homes (or persons in v1)
+P_INFECTION = 0.03 # pulled this number out of my bottom (this is what marble dude used)
 CFR_USA = 0.017 # case fatality rate for USA as of Feb 2, 2021; see https://ourworldindata.org/mortality-risk-covid
-SIM_TIME = 100 # in days  
+SIM_TIME = 1000 # in days  
 T_HOME = [1, 14] # in days
 T_SICK = [14, 56]
 T_QUARANTINE = 14 # in days 
@@ -30,7 +30,7 @@ people = []
 income = {}
 cases = {}
 deaths = {}
-immunes = {}
+recoveries = {}
 
 # setup Person object
 class Person(object):
@@ -39,10 +39,16 @@ class Person(object):
         self.id = i
         self.infected = 0
         self.immune = 0
+        self.vaccinated = 0
         self.dead = 0 
         self.money_spent = 0
 
     def live(self):
+
+        # the first day of their life, wait a random amount of time before doing anything
+        days_at_home = random.randint(*T_HOME)
+        yield self.env.timeout(days_at_home)
+
         while True:
 
             # if dead, do nothing
@@ -87,7 +93,7 @@ def collect_metrics(env, people):
         income[env.now] = sum([person.money_spent for person in people])
         cases[env.now] = sum([person.infected for person in people])
         deaths[env.now] = sum([person.dead for person in people])
-        immunes[env.now] = sum([person.immune for person in people])
+        recoveries[env.now] = sum([person.immune for person in people])
 
         # reset money spent by each person for this day
         for person in people:
@@ -118,7 +124,7 @@ def main():
         'income':pd.Series(income),
         'cases':pd.Series(cases),
         'deaths':pd.Series(deaths),
-        'immunes':pd.Series(immunes),
+        'recoveries':pd.Series(recoveries),
     })
     filename = __file__.split('.')[0]
     df.to_csv(f'./out/{filename}.csv', index=True)
